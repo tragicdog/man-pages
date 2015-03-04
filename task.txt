@@ -1,0 +1,1073 @@
+task(1) 			 User Manuals			       task(1)
+
+
+
+NAME
+       task - A command line todo manager.
+
+
+SYNOPSIS
+       task <filter> <command> [ <mods> | <args> ]
+       task --version
+
+
+DESCRIPTION
+       Taskwarrior is a command line todo list manager. It maintains a list of
+       tasks that you want to do, allowing you to  add/remove,	and  otherwise
+       manipulate  them.  Taskwarrior has a rich set of subcommands that allow
+       you to do various things with it.
+
+       At the core, taskwarrior is a list processing program. You add text and
+       additional  related  parameters and redisplay the information in a nice
+       way.  It turns into a todo list program when  you  add  due  dates  and
+       recurrence.  It	turns into an organized todo list program when you add
+       priorities, tags (one word descriptors), project groups, etc.
+
+
+FILTER
+       The <filter> consists of zero  or  more	search	criteria  that	select
+       tasks.	For example, to list all pending tasks belonging to the 'Home'
+       project:
+
+	 task project:Home list
+
+       You can specify multiple filter terms, each of which further  restricts
+       the result:
+
+	 task project:Home +weekend garden list
+
+       This  example  applies three filters: the 'Home' project, the 'weekend'
+       tag, and the description or  annotations  must  contain	the  character
+       sequence  'garden'.  In this example, 'garden' is translated internally
+       to:
+
+	 description.contains:garden
+
+       as a convenient shortcut.  The 'contains' here is  an  attribute  modi-
+       fier,  which  is used to exert more control over the filter than simply
+       absence or presence.  See the section 'ATTRIBUTE MODIFIERS' below for a
+       complete list of modifiers.
+
+       Note  that  a  filter  may  have zero terms, which means that all tasks
+       apply to the command.  This can be dangerous, and this special case  is
+       confirmed, and cannot be overridden.  For example, this command:
+
+	 task modify +work
+	 This command has no filter, and will modify all tasks.  Are you sure?
+       (yes/no)
+
+       will add the 'work' tag to all tasks, but only after confirmation.
+
+       More filter examples:
+
+	 task					   <command> <mods>
+	 task 28				   <command> <mods>
+	 task +weekend				   <command> <mods>
+	 task project:Home due.before:today	   <command> <mods>
+	 task ebeeab00-ccf8-464b-8b58-f7f2d606edfb <command> <mods>
+
+       By default filter elements are combined with an implicit  'and'	opera-
+       tor,  but  'or'	and  'xor'  may also be used, provided parentheses are
+       included:
+
+	 task '( /[Cc]at|[Dd]og/ or /[0-9]+/ )'      <command> <mods>
+
+       The parentheses isolate the logical term from any default command  fil-
+       ter  or implicit report filter which would be combined with an implicit
+       'and'.
+
+       A filter may target specific tasks using ID or UUID numbers.  To  spec-
+       ify  multiple  tasks  use  one of these forms (comma or space-separated
+       list of ID numbers, UUID numbers or ID ranges):
+
+	 task 1,2,3				       delete
+	 task 1-3				       info
+	 task 1,2-5,19				       modify pri:H
+	 task 4-7 ebeeab00-ccf8-464b-8b58-f7f2d606edfb info
+
+
+MODIFICATIONS
+       The <mods> consist of zero or more changes to  apply  to  the  selected
+       tasks, such as:
+
+	 task <filter> <command> project:Home
+	 task <filter> <command> +weekend +garden due:tomorrow
+	 task <filter> <command> Description/annotation text
+	 task <filter> <command> /from/to/     <- replace first match
+	 task <filter> <command> /from/to/g    <- replace all matches
+
+
+SUBCOMMANDS
+       Taskwarrior  supports different kinds of commands.  There are read com-
+       mands, write commands, miscellaneous commands and  script  helper  com-
+       mands.	Read  commands do not allow modification of tasks.  Write com-
+       mands can alter almost any aspect of a task.   Script  helper  commands
+       are  provided to help you write add-on scripts, for example, shell com-
+       pletion (only minimal output is generated, as with verbose=nothing).
+
+
+READ SUBCOMMANDS
+       Reports are read subcommands. There are several reports currently  pre-
+       defined	in  taskwarrior. The output and sort behavior of these reports
+       can be configured in the configuration file.  See  also	the  man  page
+       taskrc(5).  There are also other read subcommands that are not reports.
+
+
+       task --version
+	      This  is	the  only  conventional  command  line	argument  that
+	      Taskwarrior supports, and is intended for add-on scripts to ver-
+	      ify the version  number  of  an  installed  Taskwarrior  without
+	      invoking the mechanisms that create default files.
+
+
+       task <filter>
+	      With  no	command specified, the default command is run, and the
+	      filter applied.
+
+
+       task <filter> active
+	      Shows all tasks matching the filter that	are  started  but  not
+	      completed.
+
+
+       task <filter> all
+	      Shows all tasks matching the filter, including parents of recur-
+	      ring tasks.
+
+
+       task <filter> blocked
+	      Shows all tasks matching the filter, that are currently  blocked
+	      by other tasks.
+
+
+       task <filter> blocking
+	      Shows all tasks matching the filter, that block other tasks.
+
+
+       task <filter> burndown.daily
+	      Shows a graphical burndown chart, by day.
+
+
+       task <filter> burndown.weekly
+	      Shows a graphical burndown chart, by week.  Note that 'burndown'
+	      is an alias to the 'burndown.weekly' report.
+
+
+       task <filter> burndown.monthly
+	      Shows a graphical burndown chart, by month.
+
+
+       task calendar [due|<month> <year>|<year>] [y]
+	      Shows a monthly calendar with due tasks marked.  Shows one hori-
+	      zontal  line  of	months.  If the 'y' argument is provided, will
+	      show at least one complete year.	If a year is provided, such as
+	      '2015',  then  that  full  year is shown.  If both a month and a
+	      year are specified ('6 2015') then the months displayed begin at
+	      the  specified  month  and  year.  If the 'due' argument is pro-
+	      vided, will show the starting month of the earliest due task.
+
+
+       task colors [sample | legend]
+	      Displays all possible colors, a named sample, or a  legend  con-
+	      taining all currently defined colors.
+
+
+       task columns [substring]
+	      Displays	all  supported	columns and formatting styles.	Useful
+	      when creating custom reports.  If a substring is provided,  only
+	      matching column names are shown.
+
+
+       task <filter> completed
+	      Shows all tasks matching the filter that are completed.
+
+
+       task <filter> count
+	      Displays only a count of tasks matching the filter.
+
+
+       task <filter> export
+	      Exports  all tasks in the JSON format.  Redirect the output to a
+	      file, if you wish to save it, or pipe it to another  command  or
+	      script  to  convert  it  to  another  format.  The standard task
+	      release comes with a few example scripts, such as:
+
+		export-csv.pl
+		export-sql.py
+		export-xml.py
+		export-yaml.pl
+		export-html.pl
+		export-tsv.pl
+		export-xml.rb
+		export-ical.pl
+		export-xml.pl
+		export-yad.pl
+
+
+       task <filter> ghistory.annual
+	      Shows a graphical report of task status by year.
+
+
+       task <filter> ghistory.monthly
+	      Shows a graphical report of task status  by  month.   Note  that
+	      'ghistory' is an alias to 'ghistory.monthly'.
+
+
+       task help
+	      Shows the long usage text.
+
+
+       task <filter> history.annual
+	      Shows a report of task history by year.
+
+
+       task <filter> history.monthly
+	      Shows a report of task history by month.	Note that 'history' is
+	      an alias to 'history.monthly'.
+
+
+       task <filter> ids
+	      Applies the filter then extracts only the task IDs and  presents
+	      them  as	a range, for example: 1-4,12.  This is useful as input
+	      to a task command, to achieve this:
+
+		task $(task project:Home ids) modify priority:H
+
+	      This example first gets the IDs  for  the  project:Home  filter,
+	      then  sets  the priority to H for each of those tasks.  This can
+	      also be achieved directly:
+
+		task project:Home modify priority:H
+
+	      This command is mainly of use to external scripts.
+
+
+       task <filter> uuids
+	      Applies the filter on all  tasks	(even  deleted	and  completed
+	      tasks)  then extracts only the task UUIDs and presents them as a
+	      comma-separated list.  This is useful as input to  a  task  com-
+	      mand, to achieve this:
+
+		task  $(task  project:Home status:completed uuids) modify sta-
+	      tus:pending
+
+	      This example first gets the UUIDs for the project:Home and  sta-
+	      tus:completed  filters,  then  makes each of those tasks pending
+	      again.
+
+	      This command is mainly of use to external scripts.
+
+
+       task udas
+	      Shows a list of UDAs that are  defined,  including  their  name,
+	      type,  label  and  allowed values.  Also shows UDA usage and any
+	      orphan UDAs.
+
+
+       task <filter> information
+	      Shows all data and metadata for the specified  tasks.   This  is
+	      the  only  means	of  displaying	all  aspects  of a given task,
+	      including the change history.
+
+
+       task <filter> list
+	      Provides a standard listing of tasks matching the filter.
+
+
+       task <filter> long
+	      Provides the most detailed listing of tasks matching the filter.
+
+
+       task <filter> ls
+	      Provides a short listing of tasks matching the filter.
+
+
+       task <filter> minimal
+	      Provides a minimal listing of tasks matching the filter.
+
+
+       task <filter> newest
+	      Shows the newest tasks matching the filter.
+
+
+       task <filter> next
+	      Shows  a page of the most urgent tasks, sorted by urgency, which
+	      is a calculated value.
+
+
+       task <filter> ready
+	      Shows a page of the most urgent ready tasks, sorted by  urgency.
+	      A  ready task is one that is either unscheduled, or has a sched-
+	      uled date that is past and has no wait date.
+
+
+       task <filter> oldest
+	      Shows the oldest tasks matching the filter.
+
+
+       task <filter> overdue
+	      Shows all incomplete tasks matching the filter that  are	beyond
+	      their due date.
+
+
+       task <filter> projects
+	      Lists  all  project  names  that	are  currently used by pending
+	      tasks, and the number of tasks for each.
+
+
+       task <filter> recurring
+	      Shows all recurring tasks matching the filter.
+
+
+       task <filter> unblocked
+	      Shows all tasks that are not currently blocked by  other	tasks,
+	      matching the filter.
+
+
+       task <filter> waiting
+	      Shows all waiting tasks matching the filter.
+
+
+WRITE SUBCOMMANDS
+       task add <mods>
+	      Adds a new pending task to the task list.
+
+
+       task <filter> annotate <mods>
+	      Adds an annotation to an existing task.
+
+
+       task <filter> append <mods>
+	      Appends description text to an existing task.
+
+
+       task <filter> delete <mods>
+	      Deletes the specified task from task list.
+
+
+       task <filter> denotate <mods>
+	      Deletes  an  annotation  for the specified task. If the provided
+	      description matches an  annotation  exactly,  the  corresponding
+	      annotation is deleted. If the provided description matches anno-
+	      tations partly, the first partly matched annotation is  deleted.
+
+
+       task <filter> done <mods>
+	      Marks the specified task as done.
+
+
+       task <filter> duplicate <mods>
+	      Duplicates the specified task and allows modifications.
+
+
+       task <filter> edit
+	      Launches	a  text editor to let you modify all aspects of a task
+	      directly.  In general, this is not  the  recommended  method  of
+	      modifying  tasks, but is provided for exceptional circumstances.
+	      Use carefully.
+
+
+       task import <file> [<file> ...]
+	      Imports tasks in the JSON format.   The  standard  task  release
+	      comes with a few example scripts, such as:
+
+		import-todo.sh.pl
+		import-yaml.pl
+
+
+       task log <mods>
+	      Adds a new task that is already completed, to the task list.
+
+
+       task <filter> modify <mods>
+	      Modifies the existing task with provided information.
+
+
+       task <filter> prepend <mods>
+	      Prepends description text to an existing task.
+
+
+       task <filter> start <mods>
+	      Marks the specified tasks as started.
+
+
+       task <filter> stop <mods>
+	      Removes the start time from the specified task.
+
+
+MISCELLANEOUS SUBCOMMANDS
+       Miscellaneous  subcommands  either accept no command line arguments, or
+       accept non-standard arguments.
+
+
+       task config [name [value | '']]
+	      Add, modify and remove settings directly in the taskwarrior con-
+	      figuration.   This  command  either  modifies the 'name' setting
+	      with a new value of 'value', or adds a new entry that is equiva-
+	      lent to 'name=value':
+
+		  task config name value
+
+	      This  command  sets  a blank value.  This has the effect of sup-
+	      pressing any default value:
+
+		  task config name ''
+
+	      Finally, this command removes  any  'name=...'  entry  from  the
+	      .taskrc file:
+
+		  task config name
+
+
+       task diagnostics
+	      Shows  diagnostic information, of the kind needed when reporting
+	      a problem.  When you report a bug, it is likely that  the  plat-
+	      form, version, and environment are important.  Running this com-
+	      mand generates a summary	of  similar  information  that	should
+	      accompany a bug report.
+
+	      It includes compiler, library and software information.  It does
+	      not include any personal information, other  than  the  location
+	      and size of your task data files.
+
+	      This  command also performs a diagnostic scan of your data files
+	      looking for common problems, such as duplicate UUIDs.
+
+
+       task execute <external command>
+	      Executes the specified command.  Not useful by itself, but  when
+	      used  in	conjunction  with  aliases  and extensions can provide
+	      seamless integration.
+
+
+       task logo
+	      Displays the Taskwarrior logo.
+
+
+       task reports
+	      Lists  all  supported  reports.	This  includes	the   built-in
+	      reports, and any custom reports you have defined.
+
+
+       task show [all | substring]
+	      Shows  all  the  current	settings.  If a substring is specified
+	      just the settings containing that substring will be displayed.
+
+
+       task <filter> stats
+	      Shows statistics of the tasks defined by the filter.
+
+
+       task <filter> summary
+	      Shows a report of aggregated task status by project.
+
+
+       task <filter> tags
+	      Show a list of all tags used.  Any special tags used  are  high-
+	      lighted.	 Note  that  virtual  tags are not listed - they don't
+	      really exist, and are just a convenient notation for other  task
+	      metadata.
+
+
+       task timesheet [weeks]
+	      Shows a weekly report of tasks completed and started.
+
+
+       task undo
+	      Reverts the most recent action.  Obeys the confirmation setting.
+
+
+       task version
+	      Shows the taskwarrior version number.
+
+
+HELPER SUBCOMMANDS
+       task _aliases
+	      Generates a list of all aliases, for autocompletion purposes.
+
+
+       task _columns
+	      Displays only a list of supported columns.
+
+
+       task _commands
+	      Generates a list of all commands, for autocompletion purposes.
+
+
+       task _config
+	      Lists all supported configuration variables, for completion pur-
+	      poses.
+
+
+       task <filter> _ids
+	      Shows only the IDs of matching tasks, in the form of a list.
+
+
+       task _show
+	      Shows  the  combined defaults and overrides of the configuration
+	      settings, for use by third-party applications.
+
+
+       task <filter> _uuids
+	      Shows only the UUIDs of matching tasks  among  all  tasks  (even
+	      deleted and completed tasks), in the form of a list.
+
+
+       task _udas
+	      Shows only defined UDA names, in the form of a list.
+
+
+       task <filter> _projects
+	      Shows only a list of all project names used.
+
+
+       task <filter> _tags
+	      Shows only a list of all tags used, for autocompletion purposes.
+
+
+       task <filter> _urgency
+	      Displays the urgency measure of a task.
+
+
+       task _version
+	      Shows only the taskwarrior version number.
+
+
+       task _zshcommands
+	      Generates a list of all commands, for  zsh  autocompletion  pur-
+	      poses.
+
+
+       task <filter> _zshids
+	      Shows the IDs and descriptions of matching tasks.
+
+
+       task <filter> _zshuuids
+	      Shows the UUIDs and descriptions of matching tasks.
+
+
+       task _get <DOM> [<DOM> ...]
+	      Accesses	and  displays  the  DOM reference(s).  Used to extract
+	      individual values from tasks, or the system.  Supported DOM ref-
+	      erences are:
+
+		rc.<name>
+		context.program
+		context.args
+		context.width
+		context.height
+		system.version
+		system.os
+		<id>.<attribute>
+		<uuid>.<attribute>
+
+	      Note that the 'rc.<name>' reference may need to be escaped using
+	      '--' to prevent the reference from being interpreted as an over-
+	      ride.
+
+	      Note  that  if  the DOM reference is not valid, or the reference
+	      evaluates to a missing value, the command exits with 1.
+
+
+ATTRIBUTES AND METADATA
+       ID     Tasks can be specified uniquely by IDs,  which  are  simply  the
+	      indexes  of  the	tasks  in the data file.  The ID of a task may
+	      therefore change, but only when a command is run	that  displays
+	      IDs.   When modifying tasks, it is safe to rely on the last dis-
+	      played ID.  Always run a report to check you have the  right  ID
+	      for a task. IDs can be given to task as a sequence, for example,
+	      task 1,4-10,19 delete
+
+
+       +tag|-tag
+	      Tags are arbitrary words associated with a task. Use + to add  a
+	      tag and - to remove a tag from a task. A task can have any quan-
+	      tity of tags.
+
+	      Certain tags (called 'special tags'), can be used to affect  the
+	      way  tasks  are treated.	For example, if a task has the special
+	      tag 'nocolor', then it is exempt from all color rules.  The sup-
+	      ported special tags are:
+
+		  +nocolor     Disable color rules processing for this task
+		  +nonag       Completion of this task suppresses all nag mes-
+	      sages
+		  +nocal       This task will not appear on the calendar
+		  +next        Elevates task so it appears on 'next' report
+
+	      There are also virtual tags, which represent  task  metadata  in
+	      tag  form.   These  tags do not exist, but can be used to filter
+	      tasks.  The supported virtual tags are:
+
+		  BLOCKED      Matches if the task is blocked
+		  UNBLOCKED    Matches if the task is not blocked
+		  BLOCKING     Matches if the task is blocking
+		  YESTERDAY    Matches if the task was due sometime yesterday
+		  DUE	       Matches if the task is due
+		  DUETODAY     Matches if the task is due today
+		  TODAY        Matches if the task is due today
+		  TOMORROW     Matches if the task is due sometime tomorrow
+		  WEEK	       Matches if the task is due this week
+		  MONTH        Matches if the task is due this month
+		  YEAR	       Matches if the task is due this year
+		  OVERDUE      Matches if the task is overdue
+		  ACTIVE       Matches if the task is started
+		  SCHEDULED    Matches if the task is scheduled
+		  READY        Matches if the task is actionable
+		  PARENT       Matches if the task is a parent
+		  CHILD        Matches if the task has a parent
+		  UNTIL        Matches if the task expires
+		  WAITING      Matches if the task is waiting
+		  ANNOTATED    Matches if the task has annotations
+		  TAGGED       Matches if the task has tags
+		  PENDING      Matches if the task has pending status
+		  COMPLETED    Matches if the task has completed status
+		  DELETED      Matches if the task has deleted status
+
+	      You can use +BLOCKED to filter blocked tasks,  or  -BLOCKED  for
+	      unblocked   tasks.    Similarly,	 -BLOCKED   is	equivalent  to
+	      +UNBLOCKED.
+
+
+       project:<project-name>
+	      Specifies the project to which a task is related to.
+
+
+       priority:H|M|L or priority:
+	      Specifies High, Medium, Low and no priority for a task.
+
+
+       due:<due-date>
+	      Specifies the due-date of a task.
+
+
+       recur:<frequency>
+	      Specifies the frequency of a recurrence of a task.
+
+
+       scheduled:<ready-date>
+	      Specifies the date after which a task can be accomplished.
+
+
+       until:<expiration date of task>
+	      Specifies the expiration date of a task, after which it will  be
+	      deleted.
+
+
+       limit:<number-of-rows>
+	      Specifies the desired number of tasks a report should show, if a
+	      positive integer is given.  The value 'page' may also  be  used,
+	      and  will  limit	the  report output to as many lines of text as
+	      will fit on screen.  This defaults to 25 lines.
+
+
+       wait:<wait-date>
+	      Date until task becomes pending.
+
+
+       depends:<id1,id2 ...>
+	      Declares this task to be dependent on id1 and id2.   This  means
+	      that the tasks id1 and id2 should be completed before this task.
+	      Consequently, this task will  then  show	up  on	the  'blocked'
+	      report.	It  accepts a comma-separated list of ID numbers, UUID
+	      numbers and ID ranges.  When prefixing any element of this  list
+	      by  '-',	the  specified	tasks  are removed from the dependency
+	      list.
+
+
+       entry:<entry-date>
+	      For report purposes, specifies the date that a task was created.
+
+
+ATTRIBUTE MODIFIERS
+       Attribute modifiers improve filters.  Supported modifiers are:
+
+	      before (synonyms under, below)
+	      after (synonyms over, above)
+	      none
+	      any
+	      is (synonym equals)
+	      isnt (synonym not)
+	      has (synonym contains)
+	      hasnt
+	      startswith (synonym left)
+	      endswith (synonym right)
+	      word
+	      noword
+
+       For example:
+
+	      task due.before:eom priority.not:L list
+
+       The before modifier is used to compare values, preserving semantics, so
+       project.before:B list all projects that begin with 'A'.	 Priority  'L'
+       is  before  'M', and due:2011-01-01 is before due:2011-01-02.  The syn-
+       onyms 'under' and 'below' are included to allow filters that read  more
+       naturally.
+
+       The after modifier is the inverse of the before modifier.
+
+       The  none  modifier  requires that the attribute does not have a value.
+       For example:
+
+	   task priority:      list
+	   task priority.none: list
+
+       are equivalent, and list tasks that do not have a priority.
+
+       The any modifier requires that the attribute has a value, but any value
+       will suffice.
+
+       The is modifier requires an exact match with the value.
+
+       The isnt modifier is the inverse of the is modifier.
+
+       The has modifier is used to search for a substring, such as:
+
+	   task description.has:foo list
+	   task foo		    list
+
+       These  are  equivalent  and  will return any task that has 'foo' in the
+       description or annotations.
+
+       The hasnt modifier is the inverse of the has modifier.
+
+       The startswith modifier matches against the left, or  beginning	of  an
+       attribute, such that:
+
+	   task project.startswith:H list
+	   task project:H	     list
+
+       are  equivalent and will match any project starting with 'H'.  Matching
+       all projects not starting with 'H' is done with:
+
+	   task project.not:H	      list
+
+       The  endswith  modifier	matches  against  the  right,  or  end	of  an
+       attribute.
+
+       The  word  modifier  requires that the attribute contain the whole word
+       specified, such that this:
+
+	   task description.word:bar list
+
+       Will match the description 'foo bar baz' but does not match 'dog food'.
+
+       The noword modifier is the inverse of the word modifier.
+
+
+EXPRESSIONS AND OPERATORS
+       You can use the following operators in filter expressions:
+
+	 and  or  xor		 Logical operators
+	 <  <=	=  !=  >=  >	 Relational operators
+	 (  )			 Precedence
+
+       For example:
+
+	 task due.before:eom priority.not:L list
+	 task '( due < eom or priority != L )'	list
+
+       Note  that  the	parentheses are required when using a logical operator
+       other than the 'and' operator.  The reason is that some reports contain
+       filters	that  must  be	combined with the command line.  Consider this
+       example:
+
+	 task project:Home or project:Garden list
+
+       While this looks correct, it is not.  The 'list' report contains a fil-
+       ter of:
+
+	 task show report.list.filter
+
+	 Config Variable    Value
+	 -----------------  --------------
+	 report.list.filter status:pending
+
+       Which means the example is really:
+
+	 task status:pending project:Home or project:Garden list
+
+       The implied 'and' operator makes it:
+
+	 task status:pending and project:Home or project:Garden list
+
+       This  is  a  precedence	error  - the 'and' and 'or' need to be grouped
+       using parentheses, like this:
+
+	 task status:pending and ( project:Home or project:Garden ) list
+
+       The original example therefore must be entered as:
+
+	 task '( project:Home or project:Garden )' list
+
+       This includes quotes to escape  the  parentheses,  so  that  the  shell
+       doesn't interpret them and hide them from taskwarrior.
+
+       There  is  redundancy  between operators, attribute modifiers and other
+       syntactic sugar.  For example, the following are all equivalent:
+
+	 task foo		       list
+	 task /foo/		       list
+	 task description.contains:foo list
+	 task description.has:foo      list
+	 task 'description ~ foo'      list
+
+
+SPECIFYING DATES AND FREQUENCIES
+   DATES
+       Taskwarrior reads dates from the command line and displays dates in the
+       reports.   The  expected  and  desired date format is determined by the
+       configuration variable dateformat
+
+
+	      Exact specification
+		     task ... due:7/14/2008
+
+
+	      ISO-8601
+		     task ... due:20130314T223000Z
+
+
+	      Relative wording
+		     task ... due:now
+		     task ... due:today
+		     task ... due:yesterday
+		     task ... due:tomorrow
+
+
+	      Day number with ordinal
+		     task ... due:23rd
+		     task ... due:3wks
+		     task ... due:1day
+		     task ... due:9hrs
+
+
+	      Start of next (work) week (Monday),  calendar  week  (Sunday  or
+	      Monday), month, quarter and year
+		     task ... due:sow
+		     task ... due:soww
+		     task ... due:socw
+		     task ... due:som
+		     task ... due:soq
+		     task ... due:soy
+
+
+	      End of current (work) week (Friday), calendar week (Saturday  or
+	      Sunday), month, quarter and year
+		     task ... due:eow
+		     task ... due:eoww
+		     task ... due:eocw
+		     task ... due:eom
+		     task ... due:eoq
+		     task ... due:eoy
+
+
+	      At some point or later
+		     task ... wait:later
+		     task ... wait:someday
+
+		     This sets the wait date to 1/18/2038.
+
+
+	      Next occurring weekday
+		     task ... due:fri
+
+
+	      Predictable holidays
+		     task ... due:goodfriday
+		     task ... due:easter
+		     task ... due:eastermonday
+		     task ... due:ascension
+		     task ... due:pentecost
+		     task ... due:midsommar
+		     task ... due:midsommarafton
+
+
+   FREQUENCIES
+       Recurrence periods. Taskwarrior supports several ways of specifying the
+       frequency of recurring tasks.
+
+
+	      daily, day, 1da, 2da, ...
+		     Every day or a number of days.
+
+
+	      weekdays
+		     Mondays,  Tuesdays,  Wednesdays,  Thursdays,  Fridays and
+		     skipping weekend days.
+
+
+	      weekly, 1wk, 2wks, ...
+		     Every week or a number of weeks.
+
+
+	      biweekly, fortnight
+		     Every two weeks.
+
+
+	      monthly, month, 1mo, 2mo, ...
+		     Every month.
+
+
+	      quarterly, 1qtr, 2qtrs, ...
+		     Every three months, a quarter, or a number of quarters.
+
+
+	      semiannual
+		     Every six months.
+
+
+	      annual, yearly, 1yr, 2yrs, ...
+		     Every year or a number of years.
+
+
+	      biannual, biyearly, 2yr
+		     Every two years.
+
+
+COMMAND ABBREVIATION
+       All taskwarrior commands may be abbreviated as long as a unique	prefix
+       is used, for example:
+
+	      $ task li
+
+       is an unambiguous abbreviation for
+
+	      $ task list
+
+       but
+
+	      $ task l
+
+       could be list, ls or long.
+
+       Note that you can restrict the minimum abbreviation size using the con-
+       figuration setting:
+
+	      abbreviation.minimum=3
+
+
+SPECIFYING DESCRIPTIONS
+       Some task descriptions need to be escaped because of the shell and  the
+       special	meaning  of  some  characters  to  the shell. This can be done
+       either by adding quotes to the  description  or	escaping  the  special
+       character:
+
+	      $ task add "quoted ' quote"
+	      $ task add escaped \' quote
+
+       The  argument  --  (a double dash) tells taskwarrior to treat all other
+       args as description:
+
+	      $ task add -- project:Home needs scheduling
+
+       In other situations, the shell sees spaces  and	breaks	up  arguments.
+       For example, this command:
+
+	      $ task 123 modify /from this/to that/
+
+       is broken up into several arguments, which is corrected with quotes:
+
+	      $ task 123 modify "/from this/to that/"
+
+       It is sometimes necessary to force the shell to pass quotes to Taskwar-
+       rior intact, so you can use:
+
+	      $ task add project:\'Three Word Project\' description
+
+
+CONFIGURATION FILE AND OVERRIDE OPTIONS
+       Taskwarrior stores its configuration in	a  file  in  the  user's  home
+       directory:  ~/.taskrc. The default configuration file can be overridden
+       with:
+
+
+       task rc:<path-to-alternate-file> ...
+	      Specifies an alternate configuration file.
+
+
+       TASKRC=/tmp/.taskrc task ..
+	      The environment variable overrides the default and  the  command
+	      line specification of the .taskrc file.
+
+
+       task rc.<name>:<value> ...
+	      task  rc.<name>=<value>  ...  Specifies individual configuration
+	      file overrides.
+
+
+       TASKDATA=/tmp/.task task ...
+	      The environment variable	overrides  the	default,  the  command
+	      line,  and the 'data.location' configuration setting of the task
+	      data directory.
+
+
+MORE EXAMPLES
+       For examples please see the online documentation starting at
+
+	      <http://taskwarrior.org/projects/taskwarrior/wiki>
+
+       Note that the online documentation is more detailed  and  more  current
+       than this man page.
+
+
+FILES
+       ~/.taskrc
+	      User  configuration  file  - see also taskrc(5).	Note that this
+	      can be overridden on the command line or by the TASKRC  environ-
+	      ment variable.
+
+
+       ~/.task
+	      The  default  directory  where  task  stores its data files. The
+	      location	can  be  configured  in  the  configuration   variable
+	      'data.location',	or  overridden	with  the TASKDATA environment
+	      variable..
+
+
+       ~/.task/pending.data
+	      The file that contains the tasks that are not yet done.
+
+
+       ~/.task/completed.data
+	      The file that contains the completed ("done") tasks.
+
+
+       ~/.task/undo.data
+	      The file that contains information needed by the "undo" command.
+
+
+CREDITS & COPYRIGHTS
+       Copyright (C) 2006 - 2015 P. Beckingham, F. Hernandez.
+
+       Taskwarrior  is distributed under the MIT license. See http://www.open-
+       source.org/licenses/mit-license.php for more information.
+
+
+SEE ALSO
+       taskrc(5), task-color(5), task-sync(5)
+
+       For more information regarding taskwarrior, see the following:
+
+
+       The official site at
+	      <http://taskwarrior.org>
+
+
+       The official code repository at
+	      <https://git.tasktools.org/scm/tm/task.git>
+
+
+       You can contact the project by emailing
+	      <support@taskwarrior.org>
+
+
+REPORTING BUGS
+       Bugs in taskwarrior may be reported to the issue-tracker at
+	      <http://taskwarrior.org>
+
+
+
+
+task 2.4.1			  2015-02-16			       task(1)
