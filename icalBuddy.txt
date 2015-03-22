@@ -1,0 +1,367 @@
+ICALBUDDY(1)			   icalBuddy			  ICALBUDDY(1)
+
+
+
+NAME
+       icalBuddy -- query the OS X calendar database for items
+
+SYNOPSIS
+       icalBuddy [options] command
+
+DESCRIPTION
+       icalBuddy queries the OS X calendar database for items and outputs
+       them.
+
+       The options are as follows:
+
+       command	   Specifies the general action to take. Possible values are:
+
+		   "eventsToday"	   Print events occurring today
+
+		   "eventsToday+NUM"	   Print events occurring between
+					   today and NUM days into the future,
+					   where NUM is an integer
+
+		   "eventsNow"		   Print events occurring at present
+					   time
+
+		   "eventsFrom:START to:END"
+					   Print events occurring between the
+					   two specified dates. The dates
+					   (START and END) may be specified in
+					   a natural language form (such as
+					   "tomorrow at noon" or "june 10 at 6
+					   pm") or as relative dates (such as
+					   "today+3" or "yesterday-2") but the
+					   safest format is "YYYY-MM-DD
+					   HH:MM:SS +HHMM" (the "+HHMM" part
+					   at the end specifies the timezone
+					   offset in hours and minutes from
+					   GMT, and it may have a plus or
+					   minus prefix)
+
+		   "uncompletedTasks"	   Print uncompleted tasks
+
+		   "undatedUncompletedTasks"
+					   Print uncompleted tasks that have
+					   no due date
+
+		   "tasksDueBefore:DATE"   Print uncompleted tasks that are
+					   due before the given date. DATE may
+					   be specified in a natural language
+					   form (such as "tomorrow at noon" or
+					   "june 10 at 6 pm") or as a relative
+					   date (such as "today+3" or
+					   "yesterday-2") but the safest
+					   format is "YYYY-MM-DD HH:MM:SS
+					   +HHMM" (the "+HHMM" part at the end
+					   specifies the timezone offset in
+					   hours and minutes from GMT, and it
+					   may have a plus or minus prefix)
+
+		   "calendars"		   Print a list of all the calendars
+
+		   "strEncodings"	   Print all the possible string
+					   encodings
+
+		   "editConfig" 	   Open the configuration file for
+					   editing in a GUI editor application
+
+		   "editConfigCLI"	   Open the configuration file for
+					   editing in a command-line editor
+
+       -V, --version
+		   Print version number and exit.
+
+       -u, --checkForUpdates
+		   Check for updates to self. Also allows for automatic
+		   updating of self (with minimal user interaction, straight
+		   from the command line.)
+
+       -d, --debug Print diagnostic information into the standard error stream
+		   (for example, how input dates are interpreted).
+
+       -sc, --separateByCalendar
+		   Separate events/tasks in the output by calendar.
+
+       -sd, --separateByDate
+		   Separate events/tasks in the output by date.
+
+		   -sed, --showEmptyDates
+			   Display sections for empty dates (i.e. dates that
+			   have no items) that fall within the specified range
+			   as well. Applies only if the -sd argument is used.
+
+		   -t, --showTodaysSection
+			   Always display the section for the current date
+			   (even when it is empty). Applies only if the -sd
+			   argument is used.
+
+       -sp, --separateByPriority
+		   Separate tasks in the output by priority.
+
+       -f, --formatOutput
+		   Use ANSI escape sequences to format the output and
+		   hopefully make it more readable.
+
+       -nc, --noCalendarNames
+		   Omit calendar names from the output. Does not apply if the
+		   -sc argument is used.
+
+       -nrd, --noRelativeDates
+		   Never use "natural language relative dates" (e.g. "today",
+		   "yesterday" or "day after tomorrow") instead of the default
+		   date format presentation (see the -df argument).
+
+       -npn, --noPropNames
+		   Omit property names from the output (i.e. only show
+		   property values -- e.g. "My house" instead of "location: My
+		   house").
+
+       -n, --includeOnlyEventsFromNowOn
+		   If the command value "eventsToday" is used, only output
+		   events that occur between the current time and the end of
+		   the day (as opposed to events that occur between the start
+		   and end of the day, as by default.)
+
+       -na, --maxNumAttendees
+		   Maximum number of attendees to show for events.
+
+       -nnc, --maxNumNoteChars
+		   Maximum number of characters to display from notes.
+
+       -uid, --showUIDs
+		   Display event/task UIDs (unique identifiers).
+
+       -eed, --excludeEndDates
+		   Do not output the dates/times of when events end.
+
+       -ea, --excludeAllDayEvents
+		   Do not output all-day events.
+
+       -li, --limitItems num
+		   Limit the number of printed items (events/tasks) in the
+		   output to a maximum of num items.
+
+       -std, --sortTasksByDate
+		   Sort tasks by their due dates, in descending order.
+
+       -stda, --sortTasksByDateAscending
+		   Sort tasks by their due dates, in ascending order.
+
+       --strEncoding encoding
+		   Use the specified string encoding for the output. Run the
+		   app once with the 'strEncodings' command value to see all
+		   the possible values you can use here.
+
+       -tf, --timeFormat format
+		   Format times included in the output based on the format
+		   formatting string. See the Date and Time Format Specifiers
+		   section below for documentation on the syntax to use.
+
+       -df, --dateFormat format
+		   Format dates included in the output based on the format
+		   formatting string. See the Date and Time Format Specifiers
+		   section below for documentation on the syntax to use.
+
+       -po, --propertyOrder value
+		   Print properties of events/tasks in the order specified by
+		   value, which must be a comma-separated list of property
+		   names. The allowed property names are: title, location,
+		   notes, attendees, url, datetime, priority.
+
+       -ps, --propertySeparators value
+		   Use the strings specified in value as the separators
+		   between item properties in the output. value must be a list
+		   of strings where each component is separated by an
+		   arbitrary character that is present also as the first and
+		   the last character in the value (that means you can use any
+		   character you'd like as the separator, as long as you also
+		   use it at the beginning and the end.) The components
+		   specified in value will be used in order, for each item,
+		   starting from the first printed property. If the number of
+		   printed properties for an item is bigger than the number of
+		   components in value, the last component is used as the
+		   separator for the remaining properties. For example, a
+		   value of "|, | - |" would specify ", " as the separator
+		   between the first and the second property and " - " as the
+		   separator between all the rest of the properties. The
+		   default is "|\\n    |" (i.e. use a newline and four spaces
+		   as the separator for all properties.)
+
+       -b, --bullet value
+		   Sets value as the string to be used as the bullet point in
+		   the output.
+
+       -ab, --alertBullet value
+		   Sets value as the string to be used as the alert bullet
+		   point in the output.
+
+       -ss, --sectionSeparator value
+		   Sets value as the string to be used as the section
+		   separator in the output. The default is a newline followed
+		   by a bunch of hyphens (-).
+
+       -ic, --includeCals value
+		   Includes only items from specific calendars into the
+		   output. value must be a comma-separated list of calendar
+		   titles or UIDs (you can see UIDs (unique identifiers) for
+		   your calendars by using the 'calendars' command parameter.)
+		   The -ic and -ec parameters will be handled in the order of
+		   first include, then exclude.
+
+       -ec, --excludeCals value
+		   Excludes items from specific calendars from the output.
+		   value must be a comma-separated list of calendar titles or
+		   UIDs (you can see UIDs (unique identifiers) for your
+		   calendars by using the 'calendars' command parameter.) The
+		   -ic and -ec parameters will be handled in the order of
+		   first include, then exclude.
+
+       -ict, --includeCalTypes value
+		   Includes only items from specific types of calendars into
+		   the output. value must be a comma-separated list consisting
+		   of one or more of the following: birthday, caldav,
+		   exchange, imap, local, subscription, icloud ("icloud" is an
+		   alias for "caldav", and vice versa, because iCloud
+		   calendars on Lion are actually CalDAV calendars). The -ict
+		   and -ect parameters will be handled in the order of first
+		   include, then exclude, and are always applied before the
+		   -ic and -ec parameters.
+
+       -ect, --excludeCalTypes value
+		   Excludes items from specific types of calendars from the
+		   output. See -ict for a list of allowed values. The -ict and
+		   -ect parameters will be handled in the order of first
+		   include, then exclude, and are always applied before the
+		   -ic and -ec parameters.
+
+       -iep, --includeEventProps value
+		   Includes only event properties specified by value into the
+		   output. value must be a comma-separated list of property
+		   names. Possible property names are: location, url, notes,
+		   attendees, datetime, title.
+
+       -eep, --excludeEventProps value
+		   Excludes event properties specified by value from the
+		   output. value must be a comma-separated list of property
+		   names. See -iep for a list of possible property names. A
+		   value of "*" will exclude all properties and make sure just
+		   the title is printed.
+
+       -itp, --includeTaskProps value
+		   Includes only task properties specified by value into the
+		   output. value must be a comma-separated list of property
+		   names. Possible property names are: url, notes, datetime
+		   and priority.
+
+       -etp, --excludeTaskProps value
+		   Excludes task properties specified by value from the
+		   output. value must be a comma-separated list of property
+		   names. See -itp for a list of possible property names. A
+		   value of "*" will exclude all properties and make sure just
+		   the title is printed.
+
+       -cf, --configFile path
+		   Use the configuration file located at path instead of the
+		   default one (~/.icalBuddyConfig.plist). Pass in an empty
+		   string ("") to make icalBuddy ignore the configuration file
+		   completely.
+
+       -lf, --localizationFile path
+		   Use the localization file located at path instead of the
+		   default one (~/.icalBuddyLocalization.plist).
+
+       -nnr, --notesNewlineReplacement value
+		   Replaces newlines in values of the notes property with
+		   value.
+
+DATE AND TIME FORMAT SPECIFIERS
+       Date format specifiers (used with the -df (or --dateFormat) argument:
+
+       %%	   A "%" character
+
+       %RW	   Relative week (e.g. "next week", or "10 weeks from now")
+
+       %RD	   Relative day (e.g. "yesterday", "today", or "day after
+		   tomorrow")
+
+       %a	   Abbreviated weekday name
+
+       %A	   Full weekday name
+
+       %b	   Abbreviated month name
+
+       %B	   Full month name
+
+       %d	   Day of the month as a decimal number (01-31)
+
+       %e	   Same as %d but does not print the leading 0 for days 1
+		   through 9 (unlike strftime(3), does not print a leading
+		   space)
+
+       %j	   Day of the year as a decimal number (001-366)
+
+       %m	   Month as a decimal number (01-12)
+
+       %w	   Weekday as a decimal number (0-6), where Sunday is 0
+
+       %y	   Year without century (00-99)
+
+       %Y	   Year with century (such as 1990)
+
+       %x	   Date using the date representation for the locale,
+		   including the time zone (produces different results from
+		   strftime(3))
+
+       %c	   Shorthand for "%X %x", the locale format for date and time
+
+       Time format specifiers (used with the -tf (or --timeFormat) argument:
+
+       %%	   A "%" character
+
+       %F	   Milliseconds as a decimal number (000-999)
+
+       %H	   Hour based on a 24-hour clock as a decimal number (00-23)
+
+       %I	   Hour based on a 12-hour clock as a decimal number (01-12)
+
+       %M	   Minute as a decimal number (00-59)
+
+       %p	   AM/PM designation for the locale
+
+       %S	   Second as a decimal number (00-59)
+
+       %Z	   Time zone name (such as Pacific Daylight Time; produces
+		   different results from strftime(3))
+
+       %z	   Time zone offset in hours and minutes from GMT (HHMM)
+
+       %X	   Time using the time representation for the locale (produces
+		   different results from strftime(3))
+
+EXAMPLES
+	       $ icalBuddy -sc uncompletedTasks
+
+       Outputs all uncompleted tasks, separated by calendar
+
+	       $ icalBuddy -sd -ic Work,Home -ec WeekNumbers eventsToday
+
+       Outputs all events occurring today from all calendars where the title
+       or UID matches 'Work' or 'Home' and the title or UID does not match
+       'WeekNumbers', separated by date
+
+	       $ icalBuddy eventsFrom:"2009-01-01 00:00:00 +02:00" to:"2009-01-31 23:59:59 +02:00"
+
+       Outputs all events occurring between the first of january, 2009 and the
+       31st of january, 2009 (using the timezone GMT+02:00)
+
+SEE ALSO
+       icalBuddyConfig(1), icalBuddyLocalization(1)
+
+AUTHORS
+       This man page has been written by Ali Rantakari (http://hasseg.org)
+
+
+
+1.8.8				  2013-03-02			  ICALBUDDY(1)
